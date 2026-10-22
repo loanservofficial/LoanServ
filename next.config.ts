@@ -108,6 +108,14 @@ const securityHeaders = [
 ];
 
 const nextConfig: NextConfig = {
+  // The free CIBIL check was removed: LoanServ does not supply credit reports.
+  // Keep the indexed URL alive by sending it to the explainer that replaced it.
+  async redirects() {
+    return [
+      { source: "/free-cibil-score", destination: "/blog/what-is-a-good-credit-score-in-india", permanent: true },
+      { source: "/legal/data-policy", destination: "/legal/privacy-policy", permanent: true },
+    ];
+  },
   // The chat assistant indexes content/ at request time (lib/chat-knowledge),
   // so the MDX must ship inside that route's serverless function.
   outputFileTracingIncludes: {

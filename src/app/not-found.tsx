@@ -27,9 +27,6 @@ export default function NotFound() {
         <Link href="/offers" className="hover:text-evergreen">
           This month&apos;s offers
         </Link>
-        <Link href="/free-cibil-score" className="hover:text-evergreen">
-          Free CIBIL score
-        </Link>
         <Link href="/blog" className="hover:text-evergreen">
           Blog
         </Link>

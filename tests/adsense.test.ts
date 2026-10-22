@@ -19,7 +19,7 @@ test("ads stay off the lead forms, partner login, confirmations and tools", () =
   for (const p of ["/", "/loans/home-loan", "/blog/doctor-loans-hyderabad", "/calculators/emi-calculator", "/applyx"]) {
     assert.equal(adsAllowedOn(p), true, p);
   }
-  for (const p of ["/apply", "/free-cibil-score", "/partner-portal", "/confirm/abc123", "/tools/partner-links"]) {
+  for (const p of ["/apply", "/partner-portal", "/confirm/abc123", "/tools/partner-links"]) {
     assert.equal(adsAllowedOn(p), false, p);
   }
 });

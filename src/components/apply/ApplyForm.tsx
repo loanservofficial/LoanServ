@@ -126,10 +126,6 @@ export function ApplyForm({
           Meanwhile, explore our{" "}
           <Link href="/calculators/emi-calculator" className="text-evergreen underline">
             EMI calculator
-          </Link>{" "}
-          or{" "}
-          <Link href="/free-cibil-score" className="text-evergreen underline">
-            check your CIBIL score
           </Link>
           .
         </p>

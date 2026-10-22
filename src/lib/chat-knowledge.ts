@@ -32,7 +32,6 @@ const MDX_SOURCES: { subdir: string; base: string }[] = [
 /** Top-level pages the assistant may link to besides the indexed ones. */
 const STATIC_PAGES: { title: string; url: string }[] = [
   { title: "Apply for a loan", url: "/apply" },
-  { title: "Free CIBIL score check", url: "/free-cibil-score" },
   { title: "Current loan offers", url: "/offers" },
   { title: "All loans", url: "/loans" },
   { title: "Balance transfer", url: "/balance-transfer" },
