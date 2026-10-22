@@ -1,44 +1,134 @@
 import "server-only";
-import nodemailer from "nodemailer";
 import { site } from "./site";
 
-/**
- * Sends a lead email via SMTP. Reads all secrets from env. If SMTP is not
- * configured, it degrades gracefully: the submission still succeeds (free
- * lead-capture path) and we log a non-PII warning instead of throwing.
- */
-export async function sendLeadEmail({
-  subject,
-  html,
-  replyTo,
-}: {
+export interface LeadEmail {
   subject: string;
   html: string;
   replyTo?: string;
-}): Promise<{ sent: boolean }> {
-  const { SMTP_HOST, SMTP_PORT, SMTP_USER, SMTP_PASS } = process.env;
-  const to = process.env.LEAD_TO_EMAIL || site.email;
+}
 
-  if (!SMTP_HOST || !SMTP_USER || !SMTP_PASS) {
-    // No SMTP configured yet — don't break the site. Never log the lead's PII.
-    console.warn("[lead] SMTP not configured; lead accepted but not emailed. Configure SMTP_* env vars.");
-    return { sent: false };
+type Provider = "smtp" | "resend" | "brevo";
+
+function env(name: string): string {
+  return (process.env[name] || "").trim();
+}
+
+/**
+ * Sends a lead email. LEAD_EMAIL_PROVIDER picks how (default "smtp"):
+ *
+ * - smtp:   Nodemailer over SMTP_HOST/PORT/USER/PASS (works on Vercel/Node and
+ *           on Cloudflare Workers via nodejs_compat TCP sockets).
+ * - resend: Resend's HTTP API (RESEND_API_KEY + LEAD_FROM_EMAIL).
+ * - brevo:  Brevo's HTTP API (BREVO_API_KEY + LEAD_FROM_EMAIL).
+ *
+ * The HTTP providers are plain fetch() calls, so they work on any runtime.
+ * If the chosen provider isn't configured, it degrades gracefully: the
+ * submission still succeeds (free lead-capture path) and we log a non-PII
+ * warning instead of throwing. A configured provider that fails does throw;
+ * callers (lead-delivery, voice-webhook) catch it.
+ */
+export async function sendLeadEmail(email: LeadEmail): Promise<{ sent: boolean }> {
+  const to = env("LEAD_TO_EMAIL") || site.email;
+  const provider = (env("LEAD_EMAIL_PROVIDER").toLowerCase() || "smtp") as Provider;
+
+  switch (provider) {
+    case "smtp":
+      return sendViaSmtp(email, to);
+    case "resend":
+      return sendViaResend(email, to);
+    case "brevo":
+      return sendViaBrevo(email, to);
+    default:
+      console.warn(`[lead] Unknown LEAD_EMAIL_PROVIDER "${provider}"; lead accepted but not emailed.`);
+      return { sent: false };
   }
+}
 
+/** Never log the lead's PII — only which settings are missing. */
+function notConfigured(what: string): { sent: false } {
+  console.warn(`[lead] ${what} not configured; lead accepted but not emailed.`);
+  return { sent: false };
+}
+
+async function sendViaSmtp({ subject, html, replyTo }: LeadEmail, to: string): Promise<{ sent: boolean }> {
+  const host = env("SMTP_HOST");
+  const user = env("SMTP_USER");
+  const pass = env("SMTP_PASS");
+  const port = Number(env("SMTP_PORT") || 587);
+  if (!host || !user || !pass) return notConfigured("SMTP (SMTP_HOST/SMTP_USER/SMTP_PASS)");
+
+  // Loaded only when SMTP is actually used, so the HTTP providers never pull
+  // Nodemailer (and its net/tls dependencies) into a request.
+  const { default: nodemailer } = await import("nodemailer");
   const transporter = nodemailer.createTransport({
-    host: SMTP_HOST,
-    port: Number(SMTP_PORT || 587),
-    secure: Number(SMTP_PORT) === 465,
-    auth: { user: SMTP_USER, pass: SMTP_PASS },
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
   });
 
   await transporter.sendMail({
-    from: `"${site.name} Website" <${SMTP_USER}>`,
+    from: `"${site.name} Website" <${user}>`,
     to,
     subject,
     html,
     replyTo,
   });
+  return { sent: true };
+}
+
+/** POST JSON to an email API; throws with the status (never the body: it may echo PII). */
+async function postJson(url: string, headers: Record<string, string>, body: unknown, label: string) {
+  const res = await fetch(url, {
+    method: "POST",
+    headers: { "content-type": "application/json", accept: "application/json", ...headers },
+    body: JSON.stringify(body),
+    signal: AbortSignal.timeout(10_000),
+  });
+  if (!res.ok) {
+    await res.body?.cancel();
+    throw new Error(`${label} responded ${res.status}`);
+  }
+  await res.body?.cancel();
+}
+
+async function sendViaResend({ subject, html, replyTo }: LeadEmail, to: string): Promise<{ sent: boolean }> {
+  const key = env("RESEND_API_KEY");
+  const from = env("LEAD_FROM_EMAIL");
+  if (!key || !from) return notConfigured("Resend (RESEND_API_KEY/LEAD_FROM_EMAIL)");
+
+  await postJson(
+    "https://api.resend.com/emails",
+    { authorization: `Bearer ${key}` },
+    {
+      from: `${site.name} Website <${from}>`,
+      to: [to],
+      subject,
+      html,
+      ...(replyTo ? { reply_to: replyTo } : {}),
+    },
+    "Resend",
+  );
+  return { sent: true };
+}
+
+async function sendViaBrevo({ subject, html, replyTo }: LeadEmail, to: string): Promise<{ sent: boolean }> {
+  const key = env("BREVO_API_KEY");
+  const from = env("LEAD_FROM_EMAIL");
+  if (!key || !from) return notConfigured("Brevo (BREVO_API_KEY/LEAD_FROM_EMAIL)");
+
+  await postJson(
+    "https://api.brevo.com/v3/smtp/email",
+    { "api-key": key },
+    {
+      sender: { name: `${site.name} Website`, email: from },
+      to: [{ email: to }],
+      subject,
+      htmlContent: html,
+      ...(replyTo ? { replyTo: { email: replyTo } } : {}),
+    },
+    "Brevo",
+  );
   return { sent: true };
 }
 

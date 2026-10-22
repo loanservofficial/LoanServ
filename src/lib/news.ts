@@ -34,8 +34,15 @@ function isHttpUrl(value: string): boolean {
   }
 }
 
+/** How long a fetched feed is reused before fetching it again. */
+const FEED_TTL_MS = 60 * 60 * 1000;
+const feedMemo = new Map<string, { at: number; items: NewsItem[] }>();
+
 /**
- * Fetches finance/RBI headlines from a configurable RSS feed at build/ISR time.
+ * Fetches finance/RBI headlines from a configurable RSS feed. /news renders per
+ * request, so the parsed feed is kept in memory for an hour (per server
+ * instance) instead of using Next's fetch cache — on Cloudflare the page cache
+ * is read-only, so there's no ISR. A failed fetch isn't remembered.
  * Returns only headline + source + a short summary that links out (no full bodies).
  * Fails gracefully (empty list) if the feed is unreachable.
  */
@@ -55,21 +62,28 @@ export async function fetchNews(limit = 12): Promise<NewsItem[]> {
   // Only fetch http(s) feeds — guards against file:/other schemes via env misconfig.
   if (!isHttpUrl(feedUrl)) return [];
 
+  const memo = feedMemo.get(feedUrl);
+  if (memo && Date.now() - memo.at < FEED_TTL_MS) return memo.items.slice(0, limit);
+
   try {
     const res = await fetch(feedUrl, {
-      next: { revalidate: 3600 },
+      cache: "no-store",
       headers: { "User-Agent": "LoanServ/1.0 (+https://loanserv.in)" },
+      signal: AbortSignal.timeout(8_000),
     });
     if (!res.ok) return [];
     const xml = await res.text();
-    const items = xml.split(/<item[\s>]/i).slice(1);
-    return items.slice(0, limit).map((block) => {
+    const blocks = xml.split(/<item[\s>]/i).slice(1);
+    // Parse a fixed, generous number so the memo serves any `limit`.
+    const items = blocks.slice(0, Math.max(limit, 24)).map((block) => {
       const title = clean(tag(block, "title"), 140);
       const link = clean(tag(block, "link") || tag(block, "guid"));
       const description = clean(tag(block, "description"));
       const date = clean(tag(block, "pubDate"), 40);
       return { title, link, source, summary: description, date };
     }).filter((i) => i.title && i.link && isHttpUrl(i.link));
+    feedMemo.set(feedUrl, { at: Date.now(), items });
+    return items.slice(0, limit);
   } catch {
     return [];
   }

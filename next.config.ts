@@ -116,11 +116,6 @@ const nextConfig: NextConfig = {
       { source: "/legal/data-policy", destination: "/legal/privacy-policy", permanent: true },
     ];
   },
-  // The chat assistant indexes content/ at request time (lib/chat-knowledge),
-  // so the MDX must ship inside that route's serverless function.
-  outputFileTracingIncludes: {
-    "/api/chat": ["./content/**/*"],
-  },
   async headers() {
     return [
       {
