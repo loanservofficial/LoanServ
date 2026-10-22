@@ -168,7 +168,6 @@ export const megaMenus: MegaMenu[] = [
           { label: "Blog", href: "/blog" },
           { label: "Finance News", href: "/news" },
           { label: "This Month's Offers", href: "/offers" },
-          { label: "Free CIBIL Score", href: "/free-cibil-score" },
         ],
       },
       {

@@ -43,7 +43,6 @@ const footerCols: { heading: string; links: { label: string; href: string }[] }[
       { label: "Glossary", href: "/knowledge-center/glossary" },
       { label: "Blog", href: "/blog" },
       { label: "This Month's Offers", href: "/offers" },
-      { label: "Free CIBIL Score", href: "/free-cibil-score" },
       { label: "Finance News", href: "/news" },
     ],
   },
@@ -64,7 +63,6 @@ const legalLinks = [
   { label: "Privacy Policy", href: "/legal/privacy-policy" },
   { label: "Terms & Conditions", href: "/legal/terms" },
   { label: "Disclaimer", href: "/legal/disclaimer" },
-  { label: "Data & Privacy (CIBIL)", href: "/legal/data-policy" },
   { label: "Cookie Policy", href: "/legal/cookie-policy" },
 ];
 

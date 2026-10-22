@@ -44,7 +44,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/partners",
     "/faq",
     "/apply",
-    "/free-cibil-score",
     "/knowledge-center",
     "/knowledge-center/product-info",
     "/knowledge-center/tutorials",

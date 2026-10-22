@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { ChevronDown, Menu, X, Phone, TrendingUp } from "lucide-react";
+import { ChevronDown, Menu, X, Phone } from "lucide-react";
 import { Logo } from "@/components/brand/Logo";
 import { Button } from "@/components/ui/button";
 import { ApplyButton } from "@/components/apply/ApplyButton";
@@ -62,9 +62,6 @@ export function Header() {
         <div className="mx-auto flex max-w-[1200px] items-center justify-between px-6 py-1.5 text-xs">
           <p className="text-paper/80">Serving AP · Telangana · Bangalore · Chennai — DSA tie-ups with 30+ banks &amp; NBFCs</p>
           <div className="flex items-center gap-5">
-            <Link href="/free-cibil-score" className="flex items-center gap-1.5 text-paper/90 hover:text-mint">
-              <TrendingUp className="h-3.5 w-3.5" /> Check CIBIL Score
-            </Link>
             <a href={`mailto:${site.email}`} className="text-paper/90 hover:text-mint">
               {site.email}
             </a>
@@ -244,11 +241,6 @@ function MobileNav({ onNavigate }: { onNavigate: () => void }) {
           )}
         </li>
       ))}
-      <li className="pt-2">
-        <Link href="/free-cibil-score" onClick={onNavigate} className="block py-2 text-sm font-medium text-evergreen">
-          Check Free CIBIL Score →
-        </Link>
-      </li>
     </ul>
   );
 }
