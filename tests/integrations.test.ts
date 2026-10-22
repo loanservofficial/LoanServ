@@ -29,6 +29,8 @@ const ENV_KEYS = [
   "UPSTASH_REDIS_REST_URL", "UPSTASH_REDIS_REST_TOKEN", "SARVAM_API_KEY", "SARVAM_CHAT_URL", "SARVAM_CHAT_MODEL",
   "VOICE_AGENT_ENABLED", "DOGRAH_API_URL", "DOGRAH_API_KEY", "DOGRAH_TRIGGER_UUID",
   "DOGRAH_TELEPHONY_CONFIG_ID", "DOGRAH_FROM_PHONE_NUMBER_ID", "DOGRAH_WEBHOOK_SECRET",
+  "LEAD_EMAIL_PROVIDER", "LEAD_TO_EMAIL", "LEAD_FROM_EMAIL", "RESEND_API_KEY", "BREVO_API_KEY",
+  "SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS",
 ];
 beforeEach(() => {
   calls.length = 0;
@@ -39,7 +41,7 @@ beforeEach(() => {
 const store = await import("../src/lib/lead-store");
 const alerts = await import("../src/lib/alerts");
 const rl = await import("../src/lib/rate-limit");
-const { createRateLimiter } = await import("../src/lib/email");
+const { createRateLimiter, sendLeadEmail } = await import("../src/lib/email");
 const sarvam = await import("../src/lib/sarvam");
 const voice = await import("../src/lib/voice-agent");
 
@@ -171,4 +173,46 @@ test("voice helpers", () => {
   assert.equal(voice.verifyWebhookAuth("Bearer s3cret"), true);
   assert.equal(voice.verifyWebhookAuth("Bearer nope"), false);
   assert.equal(voice.verifyWebhookAuth(null), false);
+});
+
+const leadMail = { subject: "New lead", html: "<p>hi</p>", replyTo: "r@x.in" };
+
+test("lead email: unconfigured providers accept the lead without sending", async () => {
+  assert.deepEqual(await sendLeadEmail(leadMail), { sent: false }); // default smtp, no SMTP_*
+  for (const p of ["resend", "brevo", "carrier-pigeon"]) {
+    process.env.LEAD_EMAIL_PROVIDER = p;
+    assert.deepEqual(await sendLeadEmail(leadMail), { sent: false });
+  }
+  assert.equal(calls.length, 0);
+});
+
+test("lead email: resend posts to the Resend API", async () => {
+  Object.assign(process.env, {
+    LEAD_EMAIL_PROVIDER: "resend", RESEND_API_KEY: "re_test", LEAD_FROM_EMAIL: "leads@loanserv.in", LEAD_TO_EMAIL: "team@loanserv.in",
+  });
+  assert.deepEqual(await sendLeadEmail(leadMail), { sent: true });
+  assert.equal(calls.length, 1);
+  assert.equal(calls[0].url, "https://api.resend.com/emails");
+  assert.equal(calls[0].headers.authorization, "Bearer re_test");
+  assert.deepEqual(calls[0].body, {
+    from: "LoanServ Website <leads@loanserv.in>", to: ["team@loanserv.in"], subject: "New lead", html: "<p>hi</p>", reply_to: "r@x.in",
+  });
+  respond = () => ({ status: 422 });
+  await assert.rejects(sendLeadEmail(leadMail), /Resend responded 422/);
+});
+
+test("lead email: brevo posts to the Brevo API", async () => {
+  Object.assign(process.env, {
+    LEAD_EMAIL_PROVIDER: "Brevo", BREVO_API_KEY: "xkeysib-test", LEAD_FROM_EMAIL: "leads@loanserv.in", LEAD_TO_EMAIL: "team@loanserv.in",
+  });
+  assert.deepEqual(await sendLeadEmail(leadMail), { sent: true });
+  assert.equal(calls[0].url, "https://api.brevo.com/v3/smtp/email");
+  assert.equal(calls[0].headers["api-key"], "xkeysib-test");
+  assert.deepEqual(calls[0].body, {
+    sender: { name: "LoanServ Website", email: "leads@loanserv.in" },
+    to: [{ email: "team@loanserv.in" }],
+    subject: "New lead",
+    htmlContent: "<p>hi</p>",
+    replyTo: { email: "r@x.in" },
+  });
 });
