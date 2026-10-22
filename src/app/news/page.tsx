@@ -7,7 +7,9 @@ import { CtaBlock } from "@/components/sections/CtaBlock";
 import { buildMetadata } from "@/lib/seo";
 import { fetchNews } from "@/lib/news";
 
-export const revalidate = 3600; // refresh hourly (ISR)
+// Rendered per request; lib/news keeps the feed in memory for an hour.
+// (No ISR: the Cloudflare page cache is read-only — see open-next.config.ts.)
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = buildMetadata({
   title: "Finance & RBI News — Banking & Loan Headlines",

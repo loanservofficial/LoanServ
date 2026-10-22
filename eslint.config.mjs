@@ -12,6 +12,12 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Cloudflare build output, wrangler state and generated binding types.
+    ".open-next/**",
+    ".wrangler/**",
+    "cloudflare-env.d.ts",
+    // Build-time snapshots (scripts/build-chat-corpus.mjs).
+    "src/generated/**",
   ]),
 ]);
 

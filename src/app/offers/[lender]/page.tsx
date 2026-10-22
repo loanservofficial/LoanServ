@@ -14,6 +14,10 @@ import { buildMetadata } from "@/lib/seo";
 import { getLenderOffers, getOffersMeta, offerLenderSlugs } from "@/lib/offers";
 import { getLender } from "@/data/lenders";
 
+// Every valid page is prerendered from files at build time; anything else is a
+// 404. This also keeps the worker from reading content/ or data/ at request time.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return offerLenderSlugs().map((lender) => ({ lender }));
 }

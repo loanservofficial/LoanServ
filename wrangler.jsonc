@@ -1,0 +1,24 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	// See CLOUDFLARE-MIGRATION.md before deploying.
+	"name": "loanserv",
+	"main": ".open-next/worker.js",
+	"compatibility_date": "2026-10-19",
+	// nodejs_compat: Node built-ins (Buffer, crypto, net/tls for SMTP) inside the worker.
+	// global_fetch_strictly_public: fetch() can't be pointed at internal Cloudflare hosts.
+	"compatibility_flags": ["nodejs_compat", "global_fetch_strictly_public"],
+	// Static files, Next's build output and the prerendered pages
+	// (open-next.config.ts uses the static-assets incremental cache).
+	"assets": {
+		"directory": ".open-next/assets",
+		"binding": "ASSETS"
+	},
+	"observability": {
+		"enabled": true
+	},
+	// All settings (secret or not) are set with `wrangler secret put` or in the
+	// dashboard, never here, so the repo holds no values. keep_vars stops a
+	// deploy from wiping plain-text variables added in the dashboard.
+	// See CLOUDFLARE-MIGRATION.md for the full list.
+	"keep_vars": true
+}
