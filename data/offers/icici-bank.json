@@ -15,7 +15,7 @@
     "sourceUrl": "https://www.icici.bank.in/personal-banking/loans/personal-loan/interest-rates",
     "month": "October 2026",
     "lastUpdated": "2026-10-28",
-    "verified": false
+    "verified": true
   },
   {
     "lender": "ICICI Bank",
@@ -87,6 +87,6 @@
     "sourceUrl": "https://www.icici.bank.in/personal-banking/loans/car-loan/interest-rate",
     "month": "October 2026",
     "lastUpdated": "2026-10-28",
-    "verified": false
+    "verified": true
   }
 ]

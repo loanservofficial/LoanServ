@@ -15,7 +15,7 @@
     "sourceUrl": "https://www.idfcfirst.bank.in/personal-banking/loans/personal-loan/personal-loan-interest-rates",
     "month": "October 2026",
     "lastUpdated": "2026-10-28",
-    "verified": false
+    "verified": true
   },
   {
     "lender": "IDFC First Bank",
@@ -69,6 +69,6 @@
     "sourceUrl": "https://www.idfcfirst.bank.in/personal-banking/loans/car-loan",
     "month": "October 2026",
     "lastUpdated": "2026-10-28",
-    "verified": false
+    "verified": true
   }
 ]
