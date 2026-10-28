@@ -21,7 +21,7 @@ export function adsTxt(client = adsenseClient()): string {
  * partner login, consent confirmations and internal tools. AdSense policy also
  * bars ads on login and confirmation screens.
  */
-export const NO_ADS_PATHS = ["/apply", "/free-cibil-score", "/partner-portal", "/confirm", "/tools/partner-links"];
+export const NO_ADS_PATHS = ["/apply", "/partner-portal", "/confirm", "/tools/partner-links"];
 
 export function adsAllowedOn(pathname: string): boolean {
   return !NO_ADS_PATHS.some((p) => pathname === p || pathname.startsWith(`${p}/`));

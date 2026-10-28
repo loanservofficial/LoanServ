@@ -70,7 +70,7 @@ export function Hero() {
             <div className="mt-7 flex flex-col gap-3 sm:flex-row">
               <ApplyButton size="lg">Apply for Loan</ApplyButton>
               <Button asChild variant="outline" size="lg">
-                <Link href="/free-cibil-score">Check free CIBIL score</Link>
+                <Link href="/calculators/emi-calculator">Calculate your EMI</Link>
               </Button>
             </div>
 

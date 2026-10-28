@@ -13,7 +13,9 @@ import { formatINR, formatPercent } from "@/lib/format";
 import { buildMetadata } from "@/lib/seo";
 import { loanCityParams, getLoanCity } from "@/lib/loan-city";
 
-export const dynamicParams = true;
+// generateStaticParams lists every combination getLoanCity accepts, so anything
+// else is a 404 without rendering (this segment catches every /a/b path).
+export const dynamicParams = false;
 
 export function generateStaticParams() {
   return loanCityParams();

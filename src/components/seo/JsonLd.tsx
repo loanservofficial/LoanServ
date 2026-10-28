@@ -99,7 +99,7 @@ export function ArticleJsonLd({
     datePublished,
     dateModified: dateModified || datePublished,
     mainEntityOfPage: `${site.url}${slug}`,
-    image: image ? `${site.url}${image}` : `${site.url}/opengraph-image`,
+    image: image ? `${site.url}${image}` : `${site.url}/opengraph-image.png`,
   };
   return <JsonLd data={data} />;
 }

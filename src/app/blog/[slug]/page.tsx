@@ -4,6 +4,10 @@ import { listDocs, getDoc } from "@/lib/content";
 import { buildMetadata } from "@/lib/seo";
 import { BlogPostTemplate } from "@/templates/BlogPostTemplate";
 
+// Every valid page is prerendered from files at build time; anything else is a
+// 404. This also keeps the worker from reading content/ or data/ at request time.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return listDocs("blog").map((d) => ({ slug: d.slug }));
 }

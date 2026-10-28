@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { calculateEmi, tenureForEmi, payoff } from "../src/lib/emi";
+import { calculateEmi, tenureForEmi, payoff } from "../src/lib/emi.ts";
 
 test("tenureForEmi inverts calculateEmi", () => {
   const { emi } = calculateEmi(4000000, 8.5, 240);

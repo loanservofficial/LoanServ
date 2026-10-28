@@ -11,6 +11,10 @@ import { FinancialProductJsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo";
 import { getAllOffers, getLenderProductOffer, getOffersMeta } from "@/lib/offers";
 
+// Every valid page is prerendered from files at build time; anything else is a
+// 404. This also keeps the worker from reading content/ or data/ at request time.
+export const dynamicParams = false;
+
 export function generateStaticParams() {
   return getAllOffers().map((o) => ({ lender: o.lenderSlug, product: o.productSlug }));
 }
