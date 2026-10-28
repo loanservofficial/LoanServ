@@ -10,6 +10,7 @@ import { CtaBlock } from "@/components/sections/CtaBlock";
 import { FinancialProductJsonLd } from "@/components/seo/JsonLd";
 import { buildMetadata } from "@/lib/seo";
 import { getAllOffers, getLenderProductOffer, getOffersMeta } from "@/lib/offers";
+import { formatRoiRange, orDash } from "@/lib/offer-format";
 
 // Every valid page is prerendered from files at build time; anything else is a
 // 404. This also keeps the worker from reading content/ or data/ at request time.
@@ -29,7 +30,7 @@ export async function generateMetadata({
   if (!offer) return {};
   return buildMetadata({
     title: `${offer.lender} ${offer.product} Rates & Offers — ${offer.month}`.slice(0, 65),
-    description: `${offer.lender} ${offer.product}: indicative interest from ${offer.roiFrom}% p.a., ${offer.processingFee} processing fee, ${offer.tenure}. Updated ${offer.month}. Apply via LoanServ.`.slice(0, 160),
+    description: `${offer.lender} ${offer.product}: indicative interest from ${offer.roiFrom}% p.a.${offer.processingFee ? `, processing fee ${offer.processingFee}` : ""}. Updated ${offer.month}. Compare and apply via LoanServ.`.slice(0, 160),
     path: `/offers/${lender}/${product}`,
   });
 }
@@ -45,12 +46,12 @@ export default async function OfferDetailPage({
   if (!offer) notFound();
 
   const rows: { label: string; value: string }[] = [
-    { label: "Interest rate (p.a.)", value: `${offer.roiFrom}% – ${offer.roiTo}%` },
-    { label: "Processing fee", value: offer.processingFee },
-    { label: "Tenure", value: offer.tenure },
-    { label: "Pre-closure charges", value: offer.preclosureCharges },
-    { label: "Foreclosure charges", value: offer.foreclosureCharges },
-    { label: "Insurance", value: offer.insuranceNotes },
+    { label: "Interest rate (p.a.)", value: formatRoiRange(offer) },
+    { label: "Processing fee", value: orDash(offer.processingFee) },
+    { label: "Tenure", value: orDash(offer.tenure) },
+    { label: "Pre-closure charges", value: orDash(offer.preclosureCharges) },
+    { label: "Foreclosure charges", value: orDash(offer.foreclosureCharges) },
+    { label: "Insurance", value: orDash(offer.insuranceNotes) },
   ];
 
   return (
@@ -74,7 +75,7 @@ export default async function OfferDetailPage({
         eyebrow={`${offer.lender} · Indicative`}
         eyebrowIcon={Landmark}
         title={`${offer.lender} ${offer.product} — rates & offers`}
-        description={`Indicative interest from ${offer.roiFrom}% p.a. with ${offer.processingFee} processing fee and ${offer.tenure} tenure. Compare and apply through LoanServ.`}
+        description={`Indicative interest from ${offer.roiFrom}% p.a.${offer.processingFee ? `, processing fee ${offer.processingFee}` : ""}${offer.tenure ? `, tenure ${offer.tenure}` : ""}. Compare and apply through LoanServ.`}
         primary={
           <ApplyButton size="lg">
             Apply for this loan <ArrowRight className="h-4 w-4" />

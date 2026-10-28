@@ -6,6 +6,7 @@ import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/primitives";
 import { cn } from "@/lib/utils";
 import type { Offer } from "@/lib/offers";
+import { formatRoiRange, orDash } from "@/lib/offer-format";
 
 export function OffersTable({ offers, month }: { offers: Offer[]; month: string }) {
   const products = React.useMemo(
@@ -66,11 +67,11 @@ export function OffersTable({ offers, month }: { offers: Offer[]; month: string 
                   </Link>
                 </td>
                 <td className="num px-4 py-3 font-medium text-ink">
-                  {o.roiFrom}% – {o.roiTo}%
+                  {formatRoiRange(o)}
                 </td>
-                <td className="num px-4 py-3 text-slate">{o.processingFee}</td>
-                <td className="num px-4 py-3 text-slate">{o.tenure}</td>
-                <td className="px-4 py-3 text-slate">{o.foreclosureCharges}</td>
+                <td className="num px-4 py-3 text-slate">{orDash(o.processingFee)}</td>
+                <td className="num px-4 py-3 text-slate">{orDash(o.tenure)}</td>
+                <td className="px-4 py-3 text-slate">{orDash(o.foreclosureCharges)}</td>
                 <td className="px-4 py-3">
                   <a
                     href={o.sourceUrl}

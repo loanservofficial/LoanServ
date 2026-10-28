@@ -112,7 +112,7 @@ const nextConfig: NextConfig = {
   // Keep the indexed URL alive by sending it to the explainer that replaced it.
   async redirects() {
     return [
-      { source: "/free-cibil-score", destination: "/blog/what-is-a-good-credit-score-in-india", permanent: true },
+      { source: "/free-cibil-score", destination: "/blog/how-to-check-cibil-score-free", permanent: true },
       { source: "/legal/data-policy", destination: "/legal/privacy-policy", permanent: true },
     ];
   },

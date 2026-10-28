@@ -8,7 +8,8 @@ export interface Offer {
   product: string;
   productSlug: string;
   roiFrom: number;
-  roiTo: number;
+  /** Upper end of the published range; null when the lender publishes only a starting rate. */
+  roiTo: number | null;
   processingFee: string;
   tenure: string;
   preclosureCharges: string;
